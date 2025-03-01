@@ -6,6 +6,10 @@ DATABRICKS_HOST = os.getenv("DATABRICKS_HOST")
 DATABRICKS_USERNAME = os.getenv("DATABRICKS_USERNAME")
 DATABRICKS_PASSWORD = os.getenv("DATABRICKS_PASSWORD")
 
+# Ensure DATABRICKS_HOST includes the 'https://' scheme
+if not DATABRICKS_HOST.startswith("https://"):
+    DATABRICKS_HOST = f"https://{DATABRICKS_HOST}"
+
 # Get an authentication token using username and password
 auth_url = f"{DATABRICKS_HOST}/api/2.0/token/create"
 auth_data = {
