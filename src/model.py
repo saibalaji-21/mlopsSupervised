@@ -5,6 +5,7 @@ from sklearn.linear_model import ElasticNet  # ML model
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import mlflow
 import mlflow.sklearn
+import joblib  # Import joblib for saving the model
 
 # Load dataset
 data = pd.read_csv('winequality-red.csv', delimiter=';')
@@ -51,6 +52,9 @@ def train_model(alpha, l1_ratio):
         mlflow.log_metric('R2', r2)
 
         mlflow.sklearn.log_model(lr, 'model', registered_model_name='ElasticNet')
+
+        # Save the trained model
+        joblib.dump(lr, 'model.pkl')  # Save the model as model.pkl
 
 # Train the model with specific hyperparameters
 if __name__ == "__main__":
