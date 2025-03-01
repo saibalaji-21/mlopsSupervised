@@ -58,7 +58,8 @@ jobs:
       - name: Deploy to Databricks
         env:
           DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
-          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          DATABRICKS_USERNAME: ${{ secrets.DATABRICKS_USERNAME }}
+          DATABRICKS_PASSWORD: ${{ secrets.DATABRICKS_PASSWORD }}
         run: |
           pip install databricks-cli
           python deploy.py
