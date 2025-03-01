@@ -6,60 +6,81 @@ on:
       - main
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
+   build-and-test:
+     runs-on: ubuntu-latest
 
-    steps:
-      # Step 1: Check out the code
-      - name: Checkout code
-        uses: actions/checkout@v3
+     steps:
+    # Step 1: Check out the code
+     - name: Checkout code
+       uses: actions/checkout@v3
 
-      # Step 2: Set up Python
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
+    # Step 2: Download mlruns directory (if it exists)
+     - name: Download mlruns artifact
+       uses: actions/download-artifact@v4
+       with:
+        name: mlruns
+        path: .
 
-      # Step 3: Install dependencies
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+    # Step 3: Set up Python
+     - name: Set up Python
+       uses: actions/setup-python@v4
+       with:
+        python-version: '3.9'
 
-      # Step 4: Run model training and testing
-      - name: Run model training and testing
-        run: |
-          python src/model.py
+    # Step 4: Install dependencies
+     - name: Install dependencies
+       run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
 
-      # Step 5: Upload trained model as an artifact
-      - name: Upload model artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: trained-model
-          path: model.pkl
+    # Step 5: Run model training and testing
+     - name: Run model training and testing
+       run: |
+        python src/model.py
 
-  deploy-with-mlflow:
+    # Step 6: Upload mlruns directory as an artifact
+     - name: Upload mlruns artifact
+       uses: actions/upload-artifact@v4
+       with:
+        name: mlruns
+        path: mlruns
+
+    # Step 7: Upload trained model as an artifact
+     - name: Upload model artifact
+       uses: actions/upload-artifact@v4
+       with:
+        name: trained-model
+        path: model.pkl
+ 
+   deploy-with-mlflow:
     needs: build-and-test
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Check out the code
-      - name: Checkout code
-        uses: actions/checkout@v3
+    # Step 1: Check out the code
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      # Step 2: Download trained model
-      - name: Download model artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: trained-model
-          path: .
+    # Step 2: Download mlruns directory
+    - name: Download mlruns artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: mlruns
+        path: .
 
-      # Step 3: Install MLflow
-      - name: Install MLflow
-        run: |
-          pip install mlflow
+    # Step 3: Download trained model
+    - name: Download model artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: trained-model
+        path: .
 
-      # Step 4: Deploy the model using deploy.py
-      - name: Deploy the model with MLflow
-        run: |
-          python .github/workflows/deploy.py
+    # Step 4: Install MLflow
+    - name: Install MLflow
+      run: |
+        pip install mlflow
+
+    # Step 5: Deploy the model using deploy.py
+    - name: Deploy the model with MLflow
+      run: |
+        python .github/workflows/deploy.py
