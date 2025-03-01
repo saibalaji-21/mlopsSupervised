@@ -1,11 +1,11 @@
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import ElasticNet  # ML model
+from sklearn.linear_model import ElasticNet
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import mlflow
 import mlflow.sklearn
-import joblib  # Import joblib for saving the model
+import joblib
 
 # Load dataset
 data = pd.read_csv('winequality-red.csv', delimiter=';')
@@ -14,7 +14,7 @@ data = pd.read_csv('winequality-red.csv', delimiter=';')
 data = data.dropna()
 
 # Set MLflow experiment
-mlflow.set_experiment('/mlflow/sai_balaji')
+mlflow.set_experiment('wine-quality-prediction')
 
 # Elastic Net takes two parameters: alpha (ridge) and l1_ratio (lasso)
 def train_model(alpha, l1_ratio):
@@ -26,7 +26,7 @@ def train_model(alpha, l1_ratio):
     test_y = test[['quality']]
 
     # Start MLflow run
-    with mlflow.start_run(run_name='regression', description='Performing regression model'):
+    with mlflow.start_run(run_name='wine-quality-regression') as run:
         # Model building
         lr = ElasticNet(alpha=alpha, l1_ratio=l1_ratio)
         lr.fit(train_x, train_y)
@@ -43,7 +43,7 @@ def train_model(alpha, l1_ratio):
         print("MAE:", mae)
         print("R2:", r2)
 
-        # Log the metrics, parameters, and model
+        # Log parameters, metrics, and model
         mlflow.log_param('alpha', alpha)
         mlflow.log_param('l1_ratio', l1_ratio)
 
@@ -51,10 +51,10 @@ def train_model(alpha, l1_ratio):
         mlflow.log_metric('MAE', mae)
         mlflow.log_metric('R2', r2)
 
-        mlflow.sklearn.log_model(lr, 'model', registered_model_name='ElasticNet')
+        mlflow.sklearn.log_model(lr, 'model')  # Log the model as an artifact
 
-        # Save the trained model
-        joblib.dump(lr, 'model.pkl')  # Save the model as model.pkl
+        # Save the trained model locally
+        joblib.dump(lr, 'model.pkl')
 
 # Train the model with specific hyperparameters
 if __name__ == "__main__":
