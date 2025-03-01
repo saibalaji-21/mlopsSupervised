@@ -7,7 +7,7 @@ import mlflow
 import mlflow.sklearn
 
 # Load dataset
-data = pd.read_csv('winequality-red.csv', delimiter=';')
+data = pd.read_csv('data/winequality-red.csv', delimiter=';')
 
 # Drop rows with missing values
 data = data.dropna()
