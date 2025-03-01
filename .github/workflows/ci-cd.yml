@@ -3,7 +3,7 @@ name: CI/CD Pipeline for Supervised Learning Model
 on:
   push:
     branches:
-      - main  # Trigger the workflow on pushes to the main branch
+      - main
 
 jobs:
   build-and-test:
@@ -36,9 +36,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: trained-model
-          path: model.pkl
+          path: src/model.pkl
 
-  deploy-to-databricks:
+  deploy-with-mlflow:
     needs: build-and-test
     runs-on: ubuntu-latest
 
@@ -54,12 +54,12 @@ jobs:
           name: trained-model
           path: .
 
-      # Step 3: Deploy to Databricks
-      - name: Deploy to Databricks
-        env:
-          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
-          DATABRICKS_USERNAME: ${{ secrets.DATABRICKS_USERNAME }}
-          DATABRICKS_PASSWORD: ${{ secrets.DATABRICKS_PASSWORD }}
+      # Step 3: Install MLflow
+      - name: Install MLflow
         run: |
-          pip install databricks-cli
-          python .github/workflows/deploy.py
+          pip install mlflow
+
+      # Step 4: Serve the model locally
+      - name: Serve the model with MLflow
+        run: |
+          mlflow models serve -m runs:/<run_id>/model -p 1234
