@@ -56,6 +56,9 @@ def train_model(alpha, l1_ratio):
         # Save the trained model locally
         joblib.dump(lr, 'model.pkl')
 
+        # Print the run ID for debugging
+        print(f"Logged run with ID: {run.info.run_id}")
+
 # Train the model with specific hyperparameters
 if __name__ == "__main__":
     train_model(0.3, 0.6)
