@@ -1,6 +1,4 @@
 import os
-import subprocess
-import mlflow
 from mlflow.tracking import MlflowClient
 
 # Define configurations
