@@ -62,4 +62,4 @@ jobs:
           DATABRICKS_PASSWORD: ${{ secrets.DATABRICKS_PASSWORD }}
         run: |
           pip install databricks-cli
-          python deploy.py
+          python .github/workflows/deploy.py
