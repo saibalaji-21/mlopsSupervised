@@ -59,7 +59,7 @@ jobs:
         run: |
           pip install mlflow
 
-      # Step 4: Serve the model locally
-      - name: Serve the model with MLflow
+      # Step 4: Deploy the model using deploy.py
+      - name: Deploy the model with MLflow
         run: |
-          mlflow models serve -m runs:/<run_id>/model -p 1234
+          python .github/workflows/deploy.py
