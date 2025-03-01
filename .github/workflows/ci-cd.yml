@@ -36,7 +36,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: trained-model
-          path: src/model.pkl
+          path: model.pkl
 
   deploy-with-mlflow:
     needs: build-and-test
