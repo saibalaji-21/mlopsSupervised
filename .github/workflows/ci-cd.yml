@@ -6,81 +6,92 @@ on:
       - main
 
 jobs:
-   build-and-test:
-     runs-on: ubuntu-latest
+  build-and-test:
+    runs-on: ubuntu-latest
 
-     steps:
-    # Step 1: Check out the code
-     - name: Checkout code
-       uses: actions/checkout@v3
+    steps:
+      # Step 1: Check out the code
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    # Step 2: Download mlruns directory (if it exists)
-     - name: Download mlruns artifact
-       uses: actions/download-artifact@v4
-       with:
-        name: mlruns
-        path: .
+      # Step 2: Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
 
-    # Step 3: Set up Python
-     - name: Set up Python
-       uses: actions/setup-python@v4
-       with:
-        python-version: '3.9'
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install mlflow  # Ensure MLflow is installed
 
-    # Step 4: Install dependencies
-     - name: Install dependencies
-       run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      # Step 4: Create mlruns directory (MLflow will use this)
+      - name: Create MLflow directory
+        run: mkdir -p mlruns
 
-    # Step 5: Run model training and testing
-     - name: Run model training and testing
-       run: |
-        python src/model.py
+      # Step 5: Run model training and testing
+      - name: Run model training and testing
+        run: |
+          python src/model.py  # This should generate mlruns/ and model.pkl
 
-    # Step 6: Upload mlruns directory as an artifact
-     - name: Upload mlruns artifact
-       uses: actions/upload-artifact@v4
-       with:
-        name: mlruns
-        path: mlruns
+      # Step 6: Verify artifacts exist before uploading
+      - name: Verify artifacts
+        run: |
+          ls -la mlruns/
+          ls -la model.pkl || echo "Model file not found"
 
-    # Step 7: Upload trained model as an artifact
-     - name: Upload model artifact
-       uses: actions/upload-artifact@v4
-       with:
-        name: trained-model
-        path: model.pkl
- 
-   deploy-with-mlflow:
+      # Step 7: Upload mlruns directory as an artifact
+      - name: Upload mlruns artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mlruns
+          path: mlruns/
+          if-no-files-found: error  # Fail if no files found
+
+      # Step 8: Upload trained model as an artifact
+      - name: Upload model artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trained-model
+          path: model.pkl
+          if-no-files-found: error
+
+  deploy-with-mlflow:
     needs: build-and-test
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Check out the code
-    - name: Checkout code
-      uses: actions/checkout@v3
+      # Step 1: Check out the code
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    # Step 2: Download mlruns directory
-    - name: Download mlruns artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: mlruns
-        path: .
+      # Step 2: Download mlruns directory
+      - name: Download mlruns artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mlruns
+          path: mlruns/
 
-    # Step 3: Download trained model
-    - name: Download model artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: trained-model
-        path: .
+      # Step 3: Download trained model
+      - name: Download model artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: trained-model
+          path: ./
 
-    # Step 4: Install MLflow
-    - name: Install MLflow
-      run: |
-        pip install mlflow
+      # Step 4: Verify downloaded artifacts
+      - name: Verify downloads
+        run: |
+          ls -la mlruns/
+          ls -la model.pkl || echo "Model file missing"
 
-    # Step 5: Deploy the model using deploy.py
-    - name: Deploy the model with MLflow
-      run: |
-        python .github/workflows/deploy.py
+      # Step 5: Install MLflow
+      - name: Install MLflow
+        run: pip install mlflow
+
+      # Step 6: Deploy the model
+      - name: Deploy the model with MLflow
+        run: |
+          python .github/workflows/deploy.py
